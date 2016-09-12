@@ -41,9 +41,10 @@ You may also get the latest version at https://github.com/deajan/osync with the 
 
 or stable version
 
-        $ git clone -b "stable" https://github.com/deajan/osync
+	$ git clone -b "stable" https://github.com/deajan/osync
 
 Install with
+
 	$ cd osync
 	$ sh install.sh
 
