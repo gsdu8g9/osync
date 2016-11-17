@@ -32,7 +32,7 @@ Microsoft Windows is supported via MSYS or Cygwin.
 Osync has been designed to not delete any data, but rather make backups of conflictual files or soft deletes.
 Nevertheless, you should always have a neat backup of your data before trying a new sync tool.
 
-You can download the latest stable release of Osync at https://github.com/deajan/osync/archive/stable.zip
+You can download the latest stable release of osync at https://github.com/deajan/osync/archive/stable.tar.gz
 
 You may also get the latest version at https://github.com/deajan/osync with the following command
 
@@ -47,9 +47,9 @@ Install with
 	$ cd osync
 	$ sh install.sh
 
-Osync will install itself to /usr/local/bin and an example configuration file will be installed to /etc/osync
+osync will install itself to /usr/local/bin and an example configuration file will be installed to /etc/osync
 
-Osync needs to run with bash shell. Using any other shell will most probably result in errors.
+osync needs to run with bash shell. Using any other shell will most probably result in errors.
 If bash is not your default shell, you may invoke it using
 
 	$ bash osync.sh [options]
