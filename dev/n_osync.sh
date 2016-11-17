@@ -3,8 +3,8 @@
 PROGRAM="osync" # Rsync based two way sync engine with fault tolerance
 AUTHOR="(C) 2013-2016 by Orsiris de Jong"
 CONTACT="http://www.netpower.fr/osync - ozy@netpower.fr"
-PROGRAM_VERSION=1.1.4
-PROGRAM_BUILD=2016090201
+PROGRAM_VERSION=1.1.5
+PROGRAM_BUILD=2016111701
 IS_STABLE=yes
 
 source "./ofunctions.sh"
@@ -29,6 +29,14 @@ function TrapStop {
 
 function TrapQuit {
 	local exitcode=
+
+	# Get ERROR / WARN alert flags from subprocesses that call Logger
+	if [ -f "$RUN_DIR/$PROGRAM.Logger.warn.$SCRIPT_PID" ]; then
+		WARN_ALERT=1
+	fi
+	if [ -f "$RUN_DIR/$PROGRAM.Logger.error.$SCRIPT_PID" ]; then
+		ERROR_ALERT=1
+	fi
 
 	if [ $ERROR_ALERT -ne 0 ]; then
 		UnlockReplicas
@@ -381,7 +389,7 @@ function _CheckLocksRemote {
 	Logger "cmd: $cmd" "DEBUG"
 	eval "$cmd" &
 	WaitForTaskCompletion $! 720 1800 ${FUNCNAME[0]}
-	if [ $? != 0 ]; then
+	if [ $? == 0 ]; then
 		if [ -f "$RUN_DIR/$PROGRAM.${FUNCNAME[0]}.$SCRIPT_PID" ]; then
 			lockfile_content=$(cat $RUN_DIR/$PROGRAM.${FUNCNAME[0]}.$SCRIPT_PID)
 		else
@@ -1062,8 +1070,6 @@ function Sync {
 	__CheckArguments 0 $# ${FUNCNAME[0]} "$@"	#__WITH_PARANOIA_DEBUG
 
 	Logger "Starting synchronization task." "NOTICE"
-	CheckConnectivity3rdPartyHosts
-	CheckConnectivityRemoteHost
 
 	if [ -f "${INITIATOR[7]}" ] && [ "$RESUME_SYNC" != "no" ]; then
 		resume_sync=$(cat "${INITIATOR[7]}")
@@ -1465,14 +1471,12 @@ function Init {
 	fi
 
 	## Add Rsync include / exclude patterns
-	if [ $_QUICK_SYNC -lt 2 ]; then
-		RsyncPatterns
-	fi
+	RsyncPatterns
 
 	## Conflict options
 	if [ "$CONFLICT_BACKUP" != "no" ]; then
-		INITIATOR_BACKUP="--backup --backup-dir=\"${INITIATOR[1]}${INITIATOR[4]}\""
-		TARGET_BACKUP="--backup --backup-dir=\"${TARGET[1]}${TARGET[4]}\""
+		INITIATOR_BACKUP="--backup --backup-dir=\"${INITIATOR[4]}\""
+		TARGET_BACKUP="--backup --backup-dir=\"${TARGET[4]}\""
 		if [ "$CONFLICT_BACKUP_MULTIPLE" == "yes" ]; then
 			INITIATOR_BACKUP="$INITIATOR_BACKUP --suffix .$(date +%Y.%m.%d-%H.%M.%S)"
 			TARGET_BACKUP="$TARGET_BACKUP --suffix .$(date +%Y.%m.%d-%H.%M.%S)"
@@ -1717,6 +1721,10 @@ opts="${opts# *}"
 
 		if [ "$HARD_MAX_EXEC_TIME" == "" ]; then
 			HARD_MAX_EXEC_TIME=0
+		fi
+
+		if [ "$PATH_SEPARATOR_CHAR" == "" ]; then
+			PATH_SEPARATOR_CHAR=";"
 		fi
 
 		MIN_WAIT=30
